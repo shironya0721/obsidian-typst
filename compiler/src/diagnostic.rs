@@ -42,7 +42,7 @@ pub fn format_diagnostic(
             sources.get(&id).unwrap().source().text().to_string()
         } else {
             String::new()
-        })
+        }) as Result<String, ()>
     });
 
     for diagnostic in diagnostics {

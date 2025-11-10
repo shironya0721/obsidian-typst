@@ -9,13 +9,7 @@ use chrono::{DateTime, Datelike, Local};
 use parking_lot::Mutex;
 use send_wrapper::SendWrapper;
 use typst::{
-    diag::{EcoString, FileError, FileResult, PackageError, PackageResult},
-    foundations::{Bytes, Datetime},
-    model::Document,
-    syntax::{package::PackageSpec, FileId, Source, VirtualPath},
-    text::{Font, FontBook},
-    utils::LazyHash,
-    Library, World,
+    Document, Library, LibraryExt as _, World, diag::{EcoString, FileError, FileResult, PackageError, PackageResult}, foundations::{Bytes, Datetime}, syntax::{FileId, Source, VirtualPath, package::PackageSpec}, text::{Font, FontBook}, utils::LazyHash
 };
 use wasm_bindgen::JsValue;
 
@@ -58,7 +52,10 @@ impl SystemWorld {
         }
     }
 
-    pub fn compile(&mut self, text: String, path: String) -> Result<Document, JsValue> {
+    pub fn compile<D>(&mut self, text: String, path: String) -> Result<D, JsValue>
+    where
+        D: Document,
+    {
         self.reset();
 
         self.main = FileId::new(None, VirtualPath::new(path));
@@ -71,7 +68,7 @@ impl SystemWorld {
     }
 
     pub fn add_font(&mut self, data: Vec<u8>) {
-        let buffer = Bytes::from(data);
+        let buffer = Bytes::new(data);
         let mut font_infos = Vec::new();
         for font in Font::iter(buffer) {
             font_infos.push(font.info().clone());
@@ -164,7 +161,7 @@ impl SystemWorld {
         let mut fonts = Vec::new();
 
         for data in typst_assets::fonts() {
-            let buffer = Bytes::from_static(data);
+            let buffer = Bytes::new(data);
             for font in Font::iter(buffer) {
                 book.push(font.info().clone());
                 fonts.push(font);

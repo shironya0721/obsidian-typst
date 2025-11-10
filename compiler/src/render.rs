@@ -1,17 +1,30 @@
+use std::str::FromStr;
+
 use fast_image_resize::{self as fr, images::Image};
 use fr::Resizer;
-use typst::model::Document;
+use typst::{
+    introspection::Location,
+    layout::PagedDocument,
+    visualize::{Color, Paint},
+    Document,
+};
 use wasm_bindgen::Clamped;
 use web_sys::ImageData;
 
 pub fn to_image(
     resizer: &mut Resizer,
-    document: Document,
+    mut document: PagedDocument,
     pixel_per_pt: f32,
     size: u32,
     display: bool,
+    fill: String,
 ) -> Result<ImageData, wasm_bindgen::JsValue> {
-    let mut pixmap = typst_render::render(&document.pages[0], pixel_per_pt);
+    let page = &mut document.pages[0];
+    page.fill = typst::foundations::Smart::Custom(Some(Paint::Solid(
+        Color::from_str(&fill).unwrap_or(Color::WHITE),
+    )));
+
+    let mut pixmap = typst_render::render(page, pixel_per_pt);
 
     let width = pixmap.width();
     let height = pixmap.height();
@@ -51,6 +64,6 @@ pub fn to_image(
     );
 }
 
-pub fn to_svg(document: Document) -> String {
+pub fn to_svg(document: PagedDocument) -> String {
     typst_svg::svg(&document.pages[0])
 }

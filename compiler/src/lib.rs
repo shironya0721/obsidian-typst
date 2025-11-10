@@ -1,4 +1,5 @@
 use fast_image_resize as fr;
+use typst::layout::PagedDocument;
 use wasm_bindgen::prelude::*;
 use web_sys::ImageData;
 
@@ -33,15 +34,17 @@ impl Compiler {
         path: String,
         pixel_per_pt: f32,
         size: u32,
+        fill: String,
         display: bool,
     ) -> Result<ImageData, JsValue> {
-        let document = self.world.compile(text, path)?;
+        let document: PagedDocument = self.world.compile(text, path)?;
         render::to_image(
             &mut self.resizer,
             document,
             pixel_per_pt,
             size,
             display,
+            fill
         )
     }
 
